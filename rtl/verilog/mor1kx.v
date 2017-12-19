@@ -21,7 +21,7 @@ module mor1kx
 
     parameter OPTION_CPU0		= "CAPPUCCINO",
 
-    parameter OPTION_USE_TCM_DISABLE_IBUS = "ENABLED",
+    parameter OPTION_USE_TCM_DISABLE_IBUS = "NONE",
     parameter OPTION_TCM_SIZE = 10,
 
     parameter FEATURE_DATACACHE		= "NONE",
