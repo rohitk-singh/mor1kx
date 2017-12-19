@@ -211,7 +211,74 @@ module mor1kx
    wire 			   dbus_err_i;
 
    generate
-      if (BUS_IF_TYPE=="WISHBONE32") begin : bus_gen
+   if (BUS_IF_TYPE == "WISHBONE32" && OPTION_USE_TCM_DISABLE_IBUS != "NONE") begin : tcm_gen
+
+   mor1kx_ibus_tcm
+    #(.TCM_SIZE(OPTION_TCM_SIZE),
+      .INSN_WIDTH(OPTION_OPERAND_WIDTH))
+  ibus_tcm
+    (
+     // Inputs
+     .clk            (clk),
+     .rst            (rst),
+
+     // CPU interfce
+     .cpu_adr_i          (ibus_adr_o),
+     .cpu_req_i          (ibus_req_o),
+     .cpu_burst_i        (ibus_burst_o),
+     .cpu_dat_o          (ibus_dat_i[`OR1K_INSN_WIDTH-1:0]),
+     .cpu_err_o          (ibus_err_i),
+     .cpu_ack_o          (ibus_ack_i),
+
+     // TCM Populate Wishbone Slave Interface
+     .wbs_adr_i          (itcm_wbs_adr_i),
+     .wbs_stb_i          (itcm_wbs_stb_i),
+     .wbs_cyc_i          (itcm_wbs_cyc_i),
+     .wbs_sel_i          (itcm_wbs_sel_i),
+     .wbs_we_i           (itcm_wbs_we_i),
+     .wbs_cti_i          (itcm_wbs_cti_i),
+     .wbs_bte_i          (itcm_wbs_bte_i),
+     .wbs_dat_i          (itcm_wbs_dat_i),
+     .wbs_err_o          (itcm_wbs_err_o),
+     .wbs_ack_o          (itcm_wbs_ack_o),
+     .wbs_dat_o          (itcm_wbs_dat_o),
+     .wbs_rty_o          (itcm_wbs_rty_o));
+
+     mor1kx_bus_if_wb32
+        #(.BUS_IF_TYPE(DBUS_WB_TYPE),
+          .BURST_LENGTH((FEATURE_DATACACHE != "NONE") ?
+                ((OPTION_DCACHE_BLOCK_WIDTH == 4) ? 4 :
+                 ((OPTION_DCACHE_BLOCK_WIDTH == 5) ? 8 : 1))
+                : 1 ))
+      dbus_bridge
+        (
+         // Outputs
+         .cpu_err_o          (dbus_err_i),
+         .cpu_ack_o          (dbus_ack_i),
+         .cpu_dat_o          (dbus_dat_i[OPTION_OPERAND_WIDTH-1:0]),
+         .wbm_adr_o          (dwbm_adr_o),
+         .wbm_stb_o          (dwbm_stb_o),
+         .wbm_cyc_o          (dwbm_cyc_o),
+         .wbm_sel_o          (dwbm_sel_o),
+         .wbm_we_o           (dwbm_we_o),
+         .wbm_cti_o          (dwbm_cti_o),
+         .wbm_bte_o          (dwbm_bte_o),
+         .wbm_dat_o          (dwbm_dat_o),
+         // Inputs
+         .clk                (clk),
+         .rst                (rst),
+         .cpu_adr_i          (dbus_adr_o[31:0]),
+         .cpu_dat_i          (dbus_dat_o),
+         .cpu_req_i          (dbus_req_o),
+         .cpu_bsel_i         (dbus_bsel_o),
+         .cpu_we_i           (dbus_we_o),
+         .cpu_burst_i        (dbus_burst_o),
+         .wbm_err_i          (dwbm_err_i),
+         .wbm_ack_i          (dwbm_ack_i),
+         .wbm_dat_i          (dwbm_dat_i),
+         .wbm_rty_i          (dwbm_rty_i));
+
+   end else if (BUS_IF_TYPE=="WISHBONE32") begin : bus_gen
 
 	 /* mor1kx_bus_if_wb32 AUTO_TEMPLATE (
 	  .cpu_err_o			(ibus_err_i),
