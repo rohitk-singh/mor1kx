@@ -21,6 +21,9 @@ module mor1kx
 
     parameter OPTION_CPU0		= "CAPPUCCINO",
 
+    parameter OPTION_USE_TCM_DISABLE_IBUS = "ENABLED",
+    parameter OPTION_TCM_SIZE = 10,
+
     parameter FEATURE_DATACACHE		= "NONE",
     parameter OPTION_DCACHE_BLOCK_WIDTH	= 5,
     parameter OPTION_DCACHE_SET_WIDTH	= 9,
@@ -135,6 +138,20 @@ module mor1kx
     input 			      dwbm_rty_i,
 
     input [31:0] 		      irq_i,
+
+    // Instruction TCM (itcm) Wishbone slave interface
+    input  [31:0]  itcm_wbs_adr_i,
+    input          itcm_wbs_stb_i,
+    input          itcm_wbs_cyc_i,
+    input  [3:0]   itcm_wbs_sel_i,
+    input          itcm_wbs_we_i,
+    input  [2:0]   itcm_wbs_cti_i,
+    input  [1:0]   itcm_wbs_bte_i,
+    input  [31:0]  itcm_wbs_dat_i,
+    output         itcm_wbs_err_o,
+    output         itcm_wbs_ack_o,
+    output [31:0]  itcm_wbs_dat_o,
+    output         itcm_wbs_rty_o,
 
     // Debug interface
     input [15:0] 		      du_addr_i,
