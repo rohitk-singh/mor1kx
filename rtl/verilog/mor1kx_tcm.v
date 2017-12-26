@@ -16,14 +16,14 @@
 
 module mor1kx_ibus_tcm
   #(
-    parameter TCM_SIZE = 32,
+    parameter TCM_SIZE   = 32,
     parameter INSN_WIDTH = 32
     )
    (
     input clk,
     input rst,
 
-    // CPU Ibus Interface
+    // CPU ibus Interface
     input  [31:0] cpu_adr_i,
     input         cpu_req_i,
     input         cpu_burst_i,
@@ -52,22 +52,27 @@ module mor1kx_ibus_tcm
     assign cpu_ack_o = cpu_ack;
     assign cpu_err_o = 1'b0;
 
-    // If Wishbone write transaction request is received from master, then
-    // ack it in same cycle since memory is guaranteed to be written
-    assign wbs_ack_o = wbs_cyc_i & wbs_stb_i & wbs_we_i;
+    assign wbs_ack_o = wbs_ack;
     assign wbs_err_o = 1'b0;
     assign wbs_rty_o = 1'b0;
 
-    // TODO: Fix and test Wishbone interface
-    // TODO: Do we need to take care of Wishbone bte, cti and sel signals
-
-    // We do not care about cpu_burst_i input since, it burst transaction
-    // themselves update the address, and take care of cpu_req_i signals
-
-    // If cpu_req_i is received, it is guaranteed to retrun the instruction
-    // in next clock cycle. So, assert cpu_ack.
+    // Burst transfers are not supported. Ignore `wbs_cti_i` and `wbs_bte_i`.
     always @ ( posedge clk ) begin
-      if (cpu_req_i) begin
+      if (wbs_cyc_i & wbs_stb_i & wbs_ack_o) begin
+        wbs_ack <= 1'b0;
+      end else if (wbs_cyc_i & wbs_stb_i & ~wbs_ack_o) begin
+        wbs_ack <= 1'b1;
+      end else begin
+        wbs_ack <= 1'b0;
+      end
+    end
+
+    // mor1kx ibus burst reads are not supported. Ignore `cpu_burst_i` signal.
+    // TODO: Add mor1kx ibus burst reads since we can support it with dpram
+    always @ ( posedge clk ) begin
+      if (cpu_req_i & cpu_ack_o) begin
+        cpu_ack <= 1'b0;
+      end else if (cpu_req_i & ~cpu_ack_o) begin
         cpu_ack <= 1'b1;
       end else begin
         cpu_ack <= 1'b0;
@@ -81,18 +86,18 @@ module mor1kx_ibus_tcm
       )
     ibus_tcm
       (
-       .clk         (clk),
+        .clk         (clk),
 
-       // Port A: Used by mor1kx ibus
-       .addr_a      (cpu_adr_i[TCM_SIZE-1:2]),
-       .dout_a      (cpu_dat_o),
-       .din_a       ({INSN_WIDTH{1'b0}}),
-       .we_a        (1'b0),
+        // Port A: Used by mor1kx ibus
+        .addr_a      (cpu_adr_i[TCM_SIZE-1:2]),
+        .dout_a      (cpu_dat_o),
+        .din_a       ({INSN_WIDTH{1'b0}}),
+        .we_a        (1'b0),
 
-       // Port B: Used by Wishbone slave interface
-       .addr_b      (wbs_adr_i[TCM_SIZE-1:2]),
-       .dout_b      (wbs_dat_o),
-       .din_b       (wbs_dat_i),
-       .we_b        (wbs_cyc_i & wbs_stb_i & wbs_we_i));
+        // Port B: Used by Wishbone slave interface
+        .addr_b      (wbs_adr_i[TCM_SIZE-1:2]),
+        .dout_b      (wbs_dat_o),
+        .din_b       (wbs_dat_i),
+        .we_b        (wbs_cyc_i & wbs_stb_i & wbs_we_i & wbs_ack_o));
 
 endmodule // mor1kx_tcm
