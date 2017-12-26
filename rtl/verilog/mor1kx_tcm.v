@@ -74,27 +74,25 @@ module mor1kx_ibus_tcm
       end
     end
 
-    // TODO: Change this module to use True Dual Port RAM
-    //       or, directly infer True Dual Port RAM with independent
-    //       ports. Currently, this mor1kx module uses same clock and 
-    //       same process block, does read from one port and write from
-    //       another
-    
-    mor1kx_simple_dpram_sclk
+    mor1kx_true_dpram_sclk
       #(
-        .ADDR_WIDTH(TCM_SIZE),
-        .DATA_WIDTH(INSN_WIDTH),
-        .ENABLE_BYPASS(0)
+        .ADDR_WIDTH  (TCM_SIZE),
+        .DATA_WIDTH  (INSN_WIDTH)
       )
     ibus_tcm
       (
-       // Outputs
-       .dout			(cpu_dat_o),
-       // Inputs
-       .clk				(clk),
-       .raddr			(cpu_adr_i[TCM_SIZE-1:2]),
-       .re				(cpu_req_i & ~cpu_ack),
-       .waddr			(wbs_adr_i[TCM_SIZE-1:2]),
-       .we				(wbs_cyc_i & wbs_stb_i & wbs_we_i),
-       .din				(wbs_dat_i));
+       .clk         (clk),
+
+       // Port A: Used by mor1kx ibus
+       .addr_a      (cpu_adr_i[TCM_SIZE-1:2]),
+       .dout_a      (cpu_dat_o),
+       .din_a       ({INSN_WIDTH{1'b0}}),
+       .we_a        (1'b0),
+
+       // Port B: Used by Wishbone slave interface
+       .addr_b      (wbs_adr_i[TCM_SIZE-1:2]),
+       .dout_b      (wbs_dat_o),
+       .din_b       (wbs_dat_i),
+       .we_b        (wbs_cyc_i & wbs_stb_i & wbs_we_i));
+
 endmodule // mor1kx_tcm
