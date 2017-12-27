@@ -21,8 +21,8 @@ module mor1kx
 
     parameter OPTION_CPU0		= "CAPPUCCINO",
 
-    parameter FEATURE_TCM = "NONE",
-    parameter OPTION_TCM_SIZE = 10,
+    parameter FEATURE_TCM = "NONE",  // ENABLED|NONE
+    parameter OPTION_TCM_SIZE = 10,  // TCM size = 4*(2**OPTION_TCM_SIZE) bytes
 
     parameter FEATURE_DATACACHE		= "NONE",
     parameter OPTION_DCACHE_BLOCK_WIDTH	= 5,
