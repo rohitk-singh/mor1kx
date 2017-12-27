@@ -4,7 +4,8 @@
   of the OHDL was not distributed with this file, You
   can obtain one at http://juliusbaxter.net/ohdl/ohdl.txt
 
-  Description: mor1kx TCM memory. This disables the instruction or data bus
+  Description: mor1kx Instruction TCM memory. Also, adds a Wishbone slave bus
+  which can be used to access this TCM memory independent of processor.
 
   Copyright (C) 2017 Authors
 
@@ -23,7 +24,7 @@ module mor1kx_ibus_tcm
     input clk,
     input rst,
 
-    // CPU ibus Interface
+    // CPU ibus interface
     input  [31:0] cpu_adr_i,
     input         cpu_req_i,
     input         cpu_burst_i,
@@ -31,7 +32,7 @@ module mor1kx_ibus_tcm
     output        cpu_err_o,
     output        cpu_ack_o,
 
-    // TCM Populate Wishbone Slave Bus
+    // TCM Wishbone slave interface
     input  [31:0]  wbs_adr_i,
     input          wbs_stb_i,
     input          wbs_cyc_i,

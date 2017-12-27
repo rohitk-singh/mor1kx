@@ -21,7 +21,7 @@ module mor1kx
 
     parameter OPTION_CPU0		= "CAPPUCCINO",
 
-    parameter OPTION_USE_TCM_DISABLE_IBUS = "NONE",
+    parameter FEATURE_TCM = "NONE",
     parameter OPTION_TCM_SIZE = 10,
 
     parameter FEATURE_DATACACHE		= "NONE",
@@ -211,7 +211,7 @@ module mor1kx
    wire 			   dbus_err_i;
 
    generate
-   if (BUS_IF_TYPE == "WISHBONE32" && OPTION_USE_TCM_DISABLE_IBUS != "NONE") begin : tcm_gen
+   if (BUS_IF_TYPE == "WISHBONE32" && FEATURE_TCM != "NONE") begin : tcm_gen
 
    mor1kx_ibus_tcm
     #(.TCM_SIZE(OPTION_TCM_SIZE),
@@ -222,7 +222,7 @@ module mor1kx
      .clk            (clk),
      .rst            (rst),
 
-     // CPU interfce
+     // CPU interface
      .cpu_adr_i          (ibus_adr_o),
      .cpu_req_i          (ibus_req_o),
      .cpu_burst_i        (ibus_burst_o),
@@ -230,7 +230,7 @@ module mor1kx
      .cpu_err_o          (ibus_err_i),
      .cpu_ack_o          (ibus_ack_i),
 
-     // TCM Populate Wishbone Slave Interface
+     // TCM Wishbone slave interface
      .wbs_adr_i          (itcm_wbs_adr_i),
      .wbs_stb_i          (itcm_wbs_stb_i),
      .wbs_cyc_i          (itcm_wbs_cyc_i),
